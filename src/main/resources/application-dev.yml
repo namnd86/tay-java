@@ -26,3 +26,8 @@ openapi:
     serverName: Server Dev
     title: API Document
     version: 1.0.0
+
+jwt:
+  expiryHour: 1
+  expiryDay: 14
+  secretKey: c2VjcmV0QGtleS5hcGlfaGFzX2JlZW5fZGVzaWduZWRfYnlfVGF5TFE=

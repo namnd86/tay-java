@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import vn.tayjava.configuration.Translator;
 import vn.tayjava.dto.request.AddressDTO;
@@ -29,8 +31,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
+    @Override
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
     /**
      * Save new user to DB
+     *
      * @param request
      * @return userId
      */
@@ -58,6 +66,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Update user by userId
+     *
      * @param userId
      * @param request
      */
@@ -85,6 +94,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Change status of user by userId
+     *
      * @param userId
      * @param status
      */
@@ -99,6 +109,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Delete user by userId
+     *
      * @param userId
      */
     @Override
@@ -109,6 +120,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Get user detail by userId
+     *
      * @param userId
      * @return
      */
@@ -131,6 +143,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Get all user per pageNo and pageSize
+     *
      * @param pageNo
      * @param pageSize
      * @return
