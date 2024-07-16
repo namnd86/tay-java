@@ -4,7 +4,6 @@ package vn.tayjava.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import vn.tayjava.dto.request.SignInRequest;
 import vn.tayjava.dto.response.TokenResponse;
 import vn.tayjava.service.AuthenticationService;
+
+import static org.springframework.http.HttpStatus.OK;
 
 
 @Slf4j
@@ -28,7 +29,7 @@ public class AuthenticationController {
 
     @PostMapping("/access")
     public ResponseEntity<TokenResponse> login(@RequestBody SignInRequest request) {
-        return new ResponseEntity<>(authenticationService.authenticate(request), HttpStatus.OK);
+        return new ResponseEntity<>(authenticationService.authenticate(request), OK);
     }
 
     @PostMapping("/refresh")

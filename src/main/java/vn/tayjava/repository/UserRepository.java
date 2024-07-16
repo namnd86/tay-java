@@ -11,11 +11,10 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-
     Optional<User> findByEmail(String email);
 
     Optional<User> findByUsername(String username);
 
-    @Query(value = "select r from Role r inner join UserHasRole ur on r.id = ur.user.id where ur.id= :userId")
-    List<User> findAllRolesByUserId(Long userId);
+    @Query(value = "select r.name from Role r inner join UserHasRole ur on r.id = ur.user.id where ur.id= :userId")
+    List<String> findAllRolesByUserId(Long userId);
 }
