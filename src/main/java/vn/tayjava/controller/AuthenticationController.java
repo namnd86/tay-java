@@ -2,6 +2,7 @@ package vn.tayjava.controller;
 
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -33,8 +34,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public String refresh() {
-        // TODO gọi service JWT service
+    public String refresh(HttpServletRequest request) {
+        authenticationService.refreshToken(request);
         return "success";
     }
 

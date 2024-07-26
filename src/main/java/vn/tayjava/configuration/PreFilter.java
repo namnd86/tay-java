@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +21,9 @@ import vn.tayjava.service.UserService;
 
 import java.io.IOException;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static vn.tayjava.util.TokenType.ACCESS_TOKEN;
+
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -29,10 +33,10 @@ public class PreFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         log.info("---------------- PreFilter ----------------");
 
-        final String authorization = request.getHeader("Authorization");
+        final String authorization = request.getHeader(AUTHORIZATION);
         //log.info("Authorization: {}", authorization);
 
         if (StringUtils.isBlank(authorization) || !authorization.startsWith("Bearer ")) {
@@ -43,11 +47,11 @@ public class PreFilter extends OncePerRequestFilter {
         final String token = authorization.substring("Bearer ".length());
         //log.info("Token: {}", token);
 
-        final String userName = jwtService.extractUsername(token);
+        final String userName = jwtService.extractUsername(token, ACCESS_TOKEN);
 
         if (StringUtils.isNotEmpty(userName) && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userService.userDetailsService().loadUserByUsername(userName);
-            if (jwtService.isValid(token, userDetails)) {
+            if (jwtService.isValid(token, ACCESS_TOKEN, userDetails)) {
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
