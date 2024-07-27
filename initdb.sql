@@ -65,3 +65,19 @@ CREATE TABLE public.tbl_address (
 	CONSTRAINT tbl_address_pkey PRIMARY KEY (id),
 	CONSTRAINT fk_address_and_user FOREIGN KEY (user_id) REFERENCES public.tbl_user(id)
 );
+
+-- public.tbl_token definition
+
+-- Drop table
+
+-- DROP TABLE public.tbl_token;
+
+CREATE TABLE public.tbl_token (
+	id serial4 NOT NULL,
+	username varchar(255) NULL,
+	access_token varchar(255) NULL,
+	refresh_token varchar(255) NULL,
+	created_at timestamp(6) NULL,
+    updated_at timestamp(6) NULL,
+	CONSTRAINT tbl_token_pkey PRIMARY KEY (id)
+);

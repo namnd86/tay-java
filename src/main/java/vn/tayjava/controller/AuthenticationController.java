@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import vn.tayjava.dto.request.SignInRequest;
 import vn.tayjava.dto.response.TokenResponse;
 import vn.tayjava.service.AuthenticationService;
@@ -34,14 +31,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh")
-    public String refresh(HttpServletRequest request) {
-        authenticationService.refreshToken(request);
-        return "success";
+    public ResponseEntity<TokenResponse> refresh(HttpServletRequest request) {
+        return new ResponseEntity<>(authenticationService.refreshToken(request), OK);
     }
 
     @PostMapping("/logout")
-    public String logout() {
-        // TODO gọi service JWT service
-        return "success";
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        return new ResponseEntity<>(authenticationService.logout(request), OK);
     }
 }
