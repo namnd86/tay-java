@@ -3,6 +3,7 @@ package vn.tayjava.service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,8 +13,10 @@ import vn.tayjava.dto.request.SignInRequest;
 import vn.tayjava.dto.response.TokenResponse;
 import vn.tayjava.exception.InvalidDataException;
 import vn.tayjava.model.Token;
+import vn.tayjava.model.User;
 
 import java.util.List;
+import java.util.Random;
 
 import static org.springframework.http.HttpHeaders.REFERER;
 import static vn.tayjava.util.TokenType.ACCESS_TOKEN;
@@ -34,7 +37,7 @@ public class AuthenticationService {
 
         var user = userService.getByUsername(signInRequest.getUsername());
 
-        List<String> roles = userService.findAllRolesByUserId(user.getId());
+        List<String> roles = userService.getAllRolesByUserId(user.getId());
         List<SimpleGrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword(), authorities));
@@ -105,5 +108,43 @@ public class AuthenticationService {
         tokenService.delete(userName);
 
         return "Deleted!";
+    }
+
+    /**
+     * Forgot password
+     *
+     * @param email
+     */
+    public String forgotPassword(String email) {
+        log.info("---------- forgot password ----------");
+
+        User user = userService.getUserByEmail(email);
+
+        // generate random code
+        String secretKey = RandomStringUtils.randomAscii(8).toUpperCase();
+
+        // save to db
+        tokenService.save(Token.builder().username(user.getEmail()).accessToken(secretKey).build());
+
+        // send email to user
+
+        return secretKey;
+    }
+
+    /**
+     * Reset password
+     *
+     * @param code
+     */
+    public void resetPassword(String code) {
+        log.info("---------- reset password ----------");
+
+        Token token = tokenService.getByToken(code);
+        if (token == null) {
+            throw new InvalidDataException("Invalid token");
+        } else {
+
+        }
+
     }
 }

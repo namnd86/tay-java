@@ -180,8 +180,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<String> findAllRolesByUserId(long userId) {
+    public List<String> getAllRolesByUserId(long userId) {
         return userRepository.findAllRolesByUserId(userId);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Email not found"));
     }
 
     /**

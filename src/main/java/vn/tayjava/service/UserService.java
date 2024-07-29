@@ -27,5 +27,7 @@ public interface UserService {
 
     PageResponse<?> getAllUsers(int pageNo, int pageSize);
 
-    List<String> findAllRolesByUserId(long userId);
+    List<String> getAllRolesByUserId(long userId);
+
+    User getUserByEmail(String email);
 }

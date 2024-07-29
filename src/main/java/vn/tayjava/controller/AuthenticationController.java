@@ -39,4 +39,15 @@ public class AuthenticationController {
     public ResponseEntity<String> logout(HttpServletRequest request) {
         return new ResponseEntity<>(authenticationService.logout(request), OK);
     }
+
+    @PostMapping("/forgotPassword")
+    public ResponseEntity<String> forgotPassword(@RequestBody String email) {
+        return new ResponseEntity<>(authenticationService.forgotPassword(email), OK);
+    }
+
+    @PostMapping("/resetPassword/{userId}")
+    public ResponseEntity<Void> resetPassword(@PathVariable long userId, @RequestParam String code) {
+        authenticationService.resetPassword(code);
+        return new ResponseEntity<>(OK);
+    }
 }
