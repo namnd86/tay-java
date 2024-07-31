@@ -5,9 +5,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import vn.tayjava.exception.InvalidDataException;
 import vn.tayjava.service.JwtService;
 import vn.tayjava.util.TokenType;
 
@@ -17,10 +19,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static vn.tayjava.util.TokenType.ACCESS_TOKEN;
-import static vn.tayjava.util.TokenType.REFRESH_TOKEN;
+import static vn.tayjava.util.TokenType.*;
 
 @Service
+@Slf4j
 public class JwtServiceImpl implements JwtService {
 
     @Value("${jwt.expiryHour}")
@@ -35,14 +37,22 @@ public class JwtServiceImpl implements JwtService {
     @Value("${jwt.refreshKey}")
     private String refreshKey;
 
+    @Value("${jwt.resetKey}")
+    private String resetKey;
+
     @Override
     public String generateToken(UserDetails user) {
-        return generateToken(Map.of("userId", user.getAuthorities()), user);
+        return generateToken(new HashMap<>(), user);
     }
 
     @Override
     public String generateRefreshToken(UserDetails user) {
         return generateRefreshToken(new HashMap<>(), user);
+    }
+
+    @Override
+    public String generateResetToken(UserDetails user) {
+        return generateResetToken(new HashMap<>(), user);
     }
 
     @Override
@@ -52,11 +62,13 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public boolean isValid(String token, TokenType type, UserDetails userDetails) {
+        log.info("---------- isValid ----------");
         final String username = extractUsername(token, type);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token, type));
     }
 
     private String generateToken(Map<String, Object> claims, UserDetails userDetails) {
+        log.info("---------- generateToken ----------");
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
@@ -67,6 +79,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private String generateRefreshToken(Map<String, Object> claims, UserDetails userDetails) {
+        log.info("---------- generateRefreshToken ----------");
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())
@@ -76,11 +89,32 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
     }
 
+    private String generateResetToken(Map<String, Object> claims, UserDetails userDetails) {
+        log.info("---------- generateResetToken ----------");
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
+                .signWith(getKey(RESET_TOKEN), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
     private Key getKey(TokenType type) {
-        if (ACCESS_TOKEN.equals(type))
-            return Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessKey));
-        else
-            return Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshKey));
+        log.info("---------- getKey ----------");
+        switch (type) {
+            case ACCESS_TOKEN -> {
+                return Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessKey));
+            }
+            case REFRESH_TOKEN -> {
+                return Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshKey));
+            }
+            case RESET_TOKEN -> {
+                return Keys.hmacShaKeyFor(Decoders.BASE64.decode(resetKey));
+            }
+            default -> throw new InvalidDataException("Invalid token type");
+        }
+
     }
 
     private <T> T extractClaim(String token, TokenType type, Function<Claims, T> claimResolver) {

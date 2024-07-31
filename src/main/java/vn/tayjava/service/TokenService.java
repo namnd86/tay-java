@@ -49,14 +49,4 @@ public record TokenService(TokenRepository tokenRepository) {
         Token token = getByUsername(username);
         tokenRepository.delete(token);
     }
-
-    /**
-     * Get token code
-     *
-     * @param token
-     * @return
-     */
-    public Token getByToken(String token) {
-       return tokenRepository.findByToken(token).orElseThrow(() -> new ResourceNotFoundException("Not found token"));
-    }
 }

@@ -7,7 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import vn.tayjava.dto.request.ResetPasswordDTO;
 import vn.tayjava.dto.request.SignInRequest;
 import vn.tayjava.dto.response.TokenResponse;
 import vn.tayjava.service.AuthenticationService;
@@ -25,29 +29,33 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
-    @PostMapping("/access")
-    public ResponseEntity<TokenResponse> login(@RequestBody SignInRequest request) {
+    @PostMapping("/access-token")
+    public ResponseEntity<TokenResponse> accessToken(@RequestBody SignInRequest request) {
         return new ResponseEntity<>(authenticationService.authenticate(request), OK);
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refresh(HttpServletRequest request) {
+    @PostMapping("/refresh-token")
+    public ResponseEntity<TokenResponse> refreshToken(HttpServletRequest request) {
         return new ResponseEntity<>(authenticationService.refreshToken(request), OK);
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        return new ResponseEntity<>(authenticationService.logout(request), OK);
+    @PostMapping("/remove-token")
+    public ResponseEntity<String> removeToken(HttpServletRequest request) {
+        return new ResponseEntity<>(authenticationService.removeToken(request), OK);
     }
 
-    @PostMapping("/forgotPassword")
+    @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody String email) {
         return new ResponseEntity<>(authenticationService.forgotPassword(email), OK);
     }
 
-    @PostMapping("/resetPassword/{userId}")
-    public ResponseEntity<Void> resetPassword(@PathVariable long userId, @RequestParam String code) {
-        authenticationService.resetPassword(code);
-        return new ResponseEntity<>(OK);
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody String secretKey) {
+        return new ResponseEntity<>(authenticationService.confirmResetPassword(secretKey), OK);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody ResetPasswordDTO request) {
+        return new ResponseEntity<>(authenticationService.changePassword(request), OK);
     }
 }

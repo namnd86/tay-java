@@ -3,12 +3,12 @@ package vn.tayjava.service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import vn.tayjava.dto.request.ResetPasswordDTO;
 import vn.tayjava.dto.request.SignInRequest;
 import vn.tayjava.dto.response.TokenResponse;
 import vn.tayjava.exception.InvalidDataException;
@@ -16,11 +16,9 @@ import vn.tayjava.model.Token;
 import vn.tayjava.model.User;
 
 import java.util.List;
-import java.util.Random;
 
 import static org.springframework.http.HttpHeaders.REFERER;
-import static vn.tayjava.util.TokenType.ACCESS_TOKEN;
-import static vn.tayjava.util.TokenType.REFRESH_TOKEN;
+import static vn.tayjava.util.TokenType.*;
 
 @Slf4j
 @Service
@@ -96,8 +94,8 @@ public class AuthenticationService {
      * @param request
      * @return
      */
-    public String logout(HttpServletRequest request) {
-        log.info("---------- logout ----------");
+    public String removeToken(HttpServletRequest request) {
+        log.info("---------- removeToken ----------");
 
         final String token = request.getHeader(REFERER);
         if (StringUtils.isBlank(token)) {
@@ -116,35 +114,45 @@ public class AuthenticationService {
      * @param email
      */
     public String forgotPassword(String email) {
-        log.info("---------- forgot password ----------");
+        log.info("---------- forgotPassword ----------");
 
+        // check email exists or not
         User user = userService.getUserByEmail(email);
 
-        // generate random code
-        String secretKey = RandomStringUtils.randomAscii(8).toUpperCase();
+        // generate reset token
+        String resetToken = jwtService.generateResetToken(user);
+
 
         // save to db
-        tokenService.save(Token.builder().username(user.getEmail()).accessToken(secretKey).build());
+        tokenService.save(Token.builder().username(user.getUsername()).resetToken(resetToken).build());
 
-        // send email to user
+        // TODO send email to user
 
-        return secretKey;
+        return resetToken;
     }
 
     /**
      * Reset password
      *
-     * @param code
+     * @param secretKey
+     * @return
      */
-    public void resetPassword(String code) {
-        log.info("---------- reset password ----------");
+    public String confirmResetPassword(String secretKey) {
+        log.info("---------- confirmResetPassword ----------");
 
-        Token token = tokenService.getByToken(code);
-        if (token == null) {
-            throw new InvalidDataException("Invalid token");
-        } else {
+        // validate token
+        var userName = jwtService.extractUsername(secretKey, RESET_TOKEN);
 
-        }
+        // check secretKey in db
+        tokenService.getByUsername(userName);
 
+        return userName;
+    }
+
+    public String changePassword(ResetPasswordDTO pwd) {
+        log.info("---------- changePassword ----------");
+        log.info("Password: {}", pwd.password());
+
+        return "Changed";
     }
 }
