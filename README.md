@@ -38,4 +38,4 @@
 - [Bài 18. Spring Data JPA - Phần 6](https://youtu.be/s1MJbIfBI_0)
 ## Lấy Source Code Về
 - git clone https://github.com/luongquoctay87/tayjava-sample-code.git
-- git checkout spring-data-jpa
+- git checkout spring-data-jpa# tay-java
